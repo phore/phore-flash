@@ -1,0 +1,28 @@
+{
+  "name": "phore/flash",
+  "description": "Flash storage driver",
+  "license": "MIT",
+  "authors": [
+    { "name": "Matthias Leuffen", "email": "m@tth.es" }
+  ],
+  "repositories": [
+  ],
+  "require": {
+    "php": ">=7.1",
+    "phore/core": "*"
+  },
+  "suggest": {
+  },
+  "autoload": {
+    "psr-4": {
+      "Phore\\Flash\\": "src/"
+    },
+    "files": [
+      "src/functions.inc.php"
+    ]
+  },
+  "minimum-stability": "dev",
+  "require-dev": {
+    "phpunit/phpunit": "*"
+  }
+}
