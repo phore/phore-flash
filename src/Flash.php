@@ -144,16 +144,17 @@ class Flash
     /**
      * Update existing key.
      *
-     * Won't create a new key.
+     * Won't create a new key. Will return false if the key was not existing.
      *
      * @param $data
+     * @return bool
      * @throws \Exception
      */
-    public function update($data)
+    public function update($data) : bool
     {
         if ($this->key === null)
             throw new \InvalidArgumentException("No key set. Use Flash::withXy() to select storage keys.");
-        $this->driver->update($this->prefix . $this->key, $data, $this->ttl);
+        return $this->driver->update($this->prefix . $this->key, $data, $this->ttl);
     }
 
 
