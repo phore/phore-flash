@@ -90,6 +90,27 @@ class RedisFlashDriver implements PhoreFlashDriver
 
 
     /**
+     * Update only if key exists.
+     *
+     * @param string $key
+     * @param $data
+     * @return bool
+     * @throws \Exception
+     */
+    public function update(string $key, $data) : bool
+    {
+        $data = json_encode($data);
+        if ($data === false)
+            throw new \Exception("Cannot json_encode() data.");
+        if ( ! $this->redis->exists($key))
+            return false;
+        if ( ! $this->redis->set($key, $data))
+            throw new \Exception("Cannot set data. Redis error: " . $this->redis->getLastError());
+        return true;
+    }
+
+
+    /**
      * Increment/Decrement the key and return the new value
      *
      * First increment on new keys will return 1

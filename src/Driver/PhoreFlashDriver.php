@@ -25,12 +25,27 @@ interface PhoreFlashDriver
 
 
     /**
+     * Create or update data.
+     *
      * @param string $key
      * @param array $data
      * @param int $ttl
      * @return bool
      */
     public function set(string $key, $data, int $ttl=null) : bool;
+
+
+    /**
+     * Update data.
+     *
+     * Will not create a new dataset.
+     *
+     *
+     * @param string $key
+     * @param $data
+     * @return bool
+     */
+    public function update(string $key, $data) : bool;
 
 
     /**
