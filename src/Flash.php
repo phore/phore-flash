@@ -20,6 +20,7 @@ class Flash
      */
     private $driver;
 
+    private $prefix = null;
     private $key = null;
     private $ttl = null;
 
@@ -45,6 +46,25 @@ class Flash
     }
 
 
+    public function withPrefix(string $prefix) : self
+    {
+        if ($this->prefix !== null)
+            throw new \InvalidArgumentException("withPrefix() Prefix already set.");
+        $instance = clone $this;
+        $instance->prefix = $prefix;
+        return $instance;
+    }
+
+
+    public function withKey(string $key) : self
+    {
+        if ($this->key !== null)
+            throw new \InvalidArgumentException("withKey() Cannot change prefix. Prefix is fix.");
+        $instance = clone $this;
+        $instance->key = $key;
+        return $instance;
+    }
+
     public function withQuickHash($key) : self
     {
         if ($this->key !== null)
@@ -69,6 +89,11 @@ class Flash
             throw new \InvalidArgumentException("Not enough entropy characters in prefix");
         $instance->key = sha1($key) . md5($key) . sha1($key . "P");
         return $instance;
+    }
+
+    public function getKey() : string
+    {
+        return $this->key;
     }
 
     public function withTimeWindow(int $nseconds, int $offset=0) : self
@@ -120,28 +145,28 @@ class Flash
     {
         if ($this->key === null)
             throw new \InvalidArgumentException("No key set. Use Flash::withXy() to select storage keys.");
-        $this->driver->set($this->key, $data, $this->ttl);
+        $this->driver->set($this->prefix . $this->key, $data, $this->ttl);
     }
 
     public function incr(int $by = 1) : int
     {
         if ($this->key === null)
             throw new \InvalidArgumentException("No key set. Use Flash::withXy() to select storage keys.");
-        return $this->driver->incr($this->key, $by, $this->ttl);
+        return $this->driver->incr($this->prefix . $this->key, $by, $this->ttl);
     }
 
     public function dec(int $by = 1) : int
     {
         if ($this->key === null)
             throw new \InvalidArgumentException("No key set. Use Flash::withXy() to select storage keys.");
-        return $this->driver->incr($this->key, $by * -1, $this->ttl);
+        return $this->driver->incr($this->prefix . $this->key, $by * -1, $this->ttl);
     }
 
     public function del() : bool
     {
         if ($this->key === null)
             throw new \InvalidArgumentException("No key set. Use Flash::withXy() to select storage keys.");
-        return $this->driver->del($this->key);
+        return $this->driver->del($this->prefix . $this->key);
     }
 
     public function lockWait(int $maxWait=1, int $maxWaitProc=1)
