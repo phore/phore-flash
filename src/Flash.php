@@ -25,6 +25,9 @@ class Flash
     private $ttl = null;
 
 
+    private $allowClasses = [];
+    
+    
     /**
      * Flash constructor.
      * @param $driver   string|PhoreFlashDriver
@@ -45,6 +48,21 @@ class Flash
         throw new \InvalidArgumentException("Cannot interpret constructor parameter 1: '$driver'");
     }
 
+    /**
+     * @param array $classes
+     * @return self
+     */
+    public function allowClass($classes) : self 
+    {
+        if ( ! is_array($classes) && ! is_string($classes))
+            throw new \InvalidArgumentException("Parameter 1 expects to be array or string.");
+        if ( ! is_array($classes))
+            $classes = [$classes];
+        $this->allowClasses += $classes;
+        return $this;
+    }
+    
+    
 
     public function withPrefix(string $prefix) : self
     {
@@ -130,17 +148,34 @@ class Flash
 
         return $this->driver->exists($this->key);
     }
-
-    public function get($default=null)
+    
+    public function get($default=null, string $expectClass=null)
     {
         if ($this->key === null)
             throw new \InvalidArgumentException("No key set. Use Flash::withXy() to select storage keys.");
         $ret = $this->driver->get($this->key);
-        if ($ret === null)
+        $ret = unserialize($ret, ["allowed_classes" => $this->allowClasses]);
+        if ($expectClass !== null) {
+            if (!$ret instanceof $expectClass) {
+                throw new \InvalidArgumentException("Expected class: '$expectClass'.");
+            }
+        }
+        if ($ret === false)
             return $default;
         return $ret;
     }
 
+    
+    public function isValid($data)
+    {
+        if (is_object($data)) {
+            $className = get_class($data);
+            if (! in_array($className, $this->allowClasses))
+                throw new \InvalidArgumentException("Object of class '$className' is not allowed. Call Flash::allowClassed() to add it.");
+        }
+            
+    }
+    
     /**
      * Update existing key.
      *
@@ -154,7 +189,8 @@ class Flash
     {
         if ($this->key === null)
             throw new \InvalidArgumentException("No key set. Use Flash::withXy() to select storage keys.");
-        return $this->driver->update($this->prefix . $this->key, $data, $this->ttl);
+        $this->isValid($data);
+        return $this->driver->update($this->prefix . $this->key, serialize($data), $this->ttl);
     }
 
 
@@ -162,7 +198,8 @@ class Flash
     {
         if ($this->key === null)
             throw new \InvalidArgumentException("No key set. Use Flash::withXy() to select storage keys.");
-        $this->driver->set($this->prefix . $this->key, $data, $this->ttl);
+        $this->isValid($data);
+        $this->driver->set($this->prefix . $this->key, serialize($data), $this->ttl);
     }
 
     public function incr(int $by = 1) : int

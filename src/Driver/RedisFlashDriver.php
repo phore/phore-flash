@@ -63,19 +63,12 @@ class RedisFlashDriver implements PhoreFlashDriver
         $ret = $this->redis->get($key);
         if ($ret === false)
             return null;
-        $ret = json_decode($ret, true);
-        if ($ret === false)
-            return null;
         return $ret;
     }
 
 
     public function set(string $key, $data, int $ttl=null) : bool
     {
-        $data = json_encode($data);
-        if ($data === false)
-            throw new \Exception("Cannot json_encode() data.");
-        // Try to create key entry - if this fails - update the existing one.
         if ($this->redis->setnx($key, $data)) {
             if ($ttl > 0) {
                 // Only set expire on new entry
@@ -99,9 +92,6 @@ class RedisFlashDriver implements PhoreFlashDriver
      */
     public function update(string $key, $data) : bool
     {
-        $data = json_encode($data);
-        if ($data === false)
-            throw new \Exception("Cannot json_encode() data.");
         if ( ! $this->redis->exists($key))
             return false;
         if ( ! $this->redis->set($key, $data))
