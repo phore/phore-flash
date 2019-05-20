@@ -166,16 +166,24 @@ class Flash
     }
 
     
-    public function isValid($data)
+    protected function _validateData($data)
     {
-        if (is_object($data)) {
-            $className = get_class($data);
-            if (! in_array($className, $this->allowClasses))
-                throw new \InvalidArgumentException("Object of class '$className' is not allowed. Call Flash::allowClassed() to add it.");
-        }
-            
+        if ( ! $this->isAllowed($data))
+            throw new \InvalidArgumentException("Object of class '$className' is not allowed. Call Flash::allowClassed() to add it.");
     }
-    
+
+
+    public function isAllowed($value) : bool
+    {
+        if (is_object($value)) {
+            $className = get_class($value);
+            if (! in_array($className, $this->allowClasses))
+                return false;
+        }
+        return true;
+    }
+
+
     /**
      * Update existing key.
      *
@@ -189,7 +197,7 @@ class Flash
     {
         if ($this->key === null)
             throw new \InvalidArgumentException("No key set. Use Flash::withXy() to select storage keys.");
-        $this->isValid($data);
+        $this->_validateData($data);
         return $this->driver->update($this->prefix . $this->key, serialize($data), $this->ttl);
     }
 
@@ -198,7 +206,7 @@ class Flash
     {
         if ($this->key === null)
             throw new \InvalidArgumentException("No key set. Use Flash::withXy() to select storage keys.");
-        $this->isValid($data);
+        $this->_validateData($data);
         $this->driver->set($this->prefix . $this->key, serialize($data), $this->ttl);
     }
 
