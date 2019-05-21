@@ -12,6 +12,11 @@ namespace Test;
 use Phore\Flash\Driver\RedisFlashDriver;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * Class RedisFlashDriverTest
+ * @package Test
+ * @internal
+ */
 class RedisFlashDriverTest extends TestCase
 {
 
@@ -31,9 +36,6 @@ class RedisFlashDriverTest extends TestCase
         $driver->set("A", $testData);
         $this->assertEquals($testData, $driver->get("A"));
 
-        $testData = ["some"=>"array"];
-        $driver->set("A", $testData);
-        $this->assertEquals($testData, $driver->get("A"));
     }
 
 
