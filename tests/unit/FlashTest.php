@@ -21,6 +21,18 @@ use PHPUnit\Framework\TestCase;
 class FlashTest extends TestCase
 {
 
+    public function testPrefix()
+    {
+        $flash = new Flash("redis://phore-flash_redis");
+        $flash = $flash->withPrefix("SomePrefix");
+
+        $key = phore_random_str(16);
+
+        $flash->withSecureHash($key)->set("abc");
+
+        $this->assertEquals("abc", $flash->withSecureHash($key)->get());
+    }
+
     public function testSetDifferentDataTypes()
     {
         $flash = new Flash("redis://phore-flash_redis");

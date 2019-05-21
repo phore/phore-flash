@@ -146,14 +146,14 @@ class Flash
         if ($this->key === null)
             throw new \InvalidArgumentException("No key set. Use Flash::withXy() to select storage keys.");
 
-        return $this->driver->exists($this->key);
+        return $this->driver->exists($this->prefix . $this->key);
     }
     
     public function get($default=null, string $expectClass=null)
     {
         if ($this->key === null)
             throw new \InvalidArgumentException("No key set. Use Flash::withXy() to select storage keys.");
-        $ret = $this->driver->get($this->key);
+        $ret = $this->driver->get($this->prefix . $this->key);
         if ($ret === null) {
             if ($default instanceof \Exception)
                 throw $default;
