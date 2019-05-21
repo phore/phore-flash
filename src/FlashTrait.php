@@ -33,7 +33,9 @@ trait FlashTrait
         $ret = $flash->get(null, self::class);
         if ($ret === null)
             throw new InvalidDataException("Flash key '$key' not found.");
-        $flash->del();
+        if ($delete) {
+            $flash->del();
+        }
         return $ret;
     }
     
