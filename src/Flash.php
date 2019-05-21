@@ -103,8 +103,8 @@ class Flash
 
         $instance = clone $this;
         $key = serialize($key);
-        if (strlen($key) < 40)
-            throw new \InvalidArgumentException("Not enough entropy characters in prefix");
+        if (strlen($key) < 16)
+            throw new \InvalidArgumentException("Not enough entropy characters in prefix (min 16 chars)");
         $instance->key = sha1($key) . md5($key) . sha1($key . "P");
         return $instance;
     }
@@ -154,14 +154,23 @@ class Flash
         if ($this->key === null)
             throw new \InvalidArgumentException("No key set. Use Flash::withXy() to select storage keys.");
         $ret = $this->driver->get($this->key);
-        $ret = unserialize($ret, ["allowed_classes" => $this->allowClasses]);
+        if ($ret === null) {
+            if ($default instanceof \Exception)
+                throw $default;
+            return $default;
+        }
+
+        $allowedClasses = $this->allowClasses;
+        if ($expectClass !== null)
+            $allowedClasses[] = $expectClass;
+        $ret = unserialize($ret, ["allowed_classes" => $allowedClasses]);
+        if ($ret === false)
+            throw new \InvalidArgumentException("Cannot unserialize flash-data.");
         if ($expectClass !== null) {
             if (!$ret instanceof $expectClass) {
-                throw new \InvalidArgumentException("Expected class: '$expectClass'.");
+                throw new \InvalidArgumentException("Expected class: '$expectClass' but " . print_r ($ret, true) . " found.");
             }
         }
-        if ($ret === false)
-            return $default;
         return $ret;
     }
 
@@ -197,7 +206,7 @@ class Flash
     {
         if ($this->key === null)
             throw new \InvalidArgumentException("No key set. Use Flash::withXy() to select storage keys.");
-        $this->_validateData($data);
+        
         return $this->driver->update($this->prefix . $this->key, serialize($data), $this->ttl);
     }
 
@@ -206,7 +215,6 @@ class Flash
     {
         if ($this->key === null)
             throw new \InvalidArgumentException("No key set. Use Flash::withXy() to select storage keys.");
-        $this->_validateData($data);
         $this->driver->set($this->prefix . $this->key, serialize($data), $this->ttl);
     }
 
