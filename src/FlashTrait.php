@@ -10,6 +10,7 @@ namespace Phore\Flash;
 
 
 use Phore\Core\Exception\InvalidDataException;
+use Phore\Core\Exception\NotFoundException;
 
 trait FlashTrait
 {
@@ -26,13 +27,14 @@ trait FlashTrait
      * @param Flash $flash
      * @param string $key
      * @return FlashTrait
+     * @throws NotFoundException
      */
     public static function LoadFromFlash(Flash $flash, string $key, bool $delete=false) : self
     {
         $flash = $flash->withSecureHash($key);
         $ret = $flash->get(null, self::class);
         if ($ret === null)
-            throw new InvalidDataException("Flash key '$key' not found.");
+            throw new NotFoundException("Flash key '$key' not found.");
         if ($delete) {
             $flash->del();
         }

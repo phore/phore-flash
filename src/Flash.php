@@ -83,29 +83,27 @@ class Flash
         return $instance;
     }
 
-    public function withQuickHash($key) : self
+    public function withQuickHash(string $key) : self
     {
         if ($this->key !== null)
             throw new \InvalidArgumentException("withPrefix() Cannot change prefix. Prefix is fix.");
 
         $instance = clone $this;
-        $key = serialize($key);
         if (strlen($key) < 8)
             throw new \InvalidArgumentException("Not enough entropy characters in prefix");
-        $instance->key = md5($key);
+        $instance->key = phore_hash($key);
         return $instance;
     }
 
-    public function withSecureHash ($key) : self
+    public function withSecureHash (string $key) : self
     {
         if ($this->key !== null)
             throw new \InvalidArgumentException("withSecurePrefix() Cannot change prefix. Prefix is fix.");
 
         $instance = clone $this;
-        $key = serialize($key);
         if (strlen($key) < 16)
             throw new \InvalidArgumentException("Not enough entropy characters in prefix (min 16 chars)");
-        $instance->key = sha1($key) . md5($key) . sha1($key . "P");
+        $instance->key = phore_hash($key, true);
         return $instance;
     }
 
